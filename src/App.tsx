@@ -1,13 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
-  const [tasks, setTasks] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<string[]>(
+    JSON.parse(localStorage.getItem("@lista-tarefas") ?? "[]")
+  );
   const [input, setInput] = useState("");
   const [editTask, setEditTask] = useState({
     enable: false,
     task: "",
   });
+
+  useEffect(() => {
+    localStorage.setItem("@lista-tarefas", JSON.stringify(tasks));
+  }, [tasks]);
 
   function onAddTask(task: string) {
     if (!input.trim()) {
