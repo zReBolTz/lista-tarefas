@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 
 function App() {
   const [tasks, setTasks] = useState<string[]>(
     JSON.parse(localStorage.getItem("@lista-tarefas") ?? "[]")
   );
+  const inputRef = useRef<HTMLInputElement>(null);
   const [input, setInput] = useState("");
   const [editTask, setEditTask] = useState({
     enable: false,
@@ -15,8 +16,24 @@ function App() {
     localStorage.setItem("@lista-tarefas", JSON.stringify(tasks));
   }, [tasks]);
 
-  function onAddTask(task: string) {
-    if (!input.trim()) {
+  const tarefasSalvas = useMemo(() => {
+    return tasks.length;
+  }, [tasks]);
+  // function onAddTask(task: string) {
+  //   if (!input.trim()) {
+  //     alert("O campo deve ser preenchido");
+  //     return;
+  //   }
+  //   if (editTask.enable) {
+  //     onSaveEditTask();
+  //     return;
+  //   }
+  //   setTasks((tasks) => [...tasks, task]);
+  //   setInput("");
+  // }
+
+  const onAddTask = useCallback(() => {
+    if (!input) {
       alert("O campo deve ser preenchido");
       return;
     }
@@ -24,9 +41,9 @@ function App() {
       onSaveEditTask();
       return;
     }
-    setTasks((tasks) => [...tasks, task]);
+    setTasks((tasks) => [...tasks, input]);
     setInput("");
-  }
+  }, [tasks, input]);
 
   function onDeleteTask(task: string) {
     const newTask = tasks.filter((tasks) => tasks != task);
@@ -34,6 +51,7 @@ function App() {
   }
 
   function onEditTaks(task: string) {
+    inputRef.current?.focus();
     setInput(task);
     setEditTask({
       enable: true,
@@ -55,11 +73,16 @@ function App() {
   return (
     <div>
       <h1>Lista de Tarefas</h1>
-      <input value={input} onChange={(e) => setInput(e.target.value)} />
-      <button type="submit" onClick={() => onAddTask(input)}>
+      <input
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        ref={inputRef}
+      />
+      <button type="submit" onClick={() => onAddTask()}>
         {editTask.enable ? "Atualizar Tarefa" : "Adicionar Tarefa"}
       </button>
       <hr />
+      <strong>Voce tem {tarefasSalvas} Tarefas</strong>
       <ul>
         {tasks.map((task) => (
           <li key={task}>
